@@ -1,0 +1,135 @@
+/**
+ * Lion Trust Locations - Admin Styles
+ */
+
+/* Badge styles for parent/child indicators */
+.lt-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.lt-badge-parent {
+    background-color: #0073aa;
+    color: #fff;
+}
+
+.lt-badge-child {
+    background-color: #f0f0f1;
+    color: #50575e;
+}
+
+/* Bulk creator page styles */
+.lt-bulk-creator-wrap {
+    max-width: 800px;
+    margin-top: 20px;
+}
+
+.lt-bulk-creator-wrap .form-table th {
+    width: 180px;
+}
+
+.lt-bulk-creator-wrap .required {
+    color: #d63638;
+}
+
+/* Nearby locations metabox */
+.lt-nearby-locations-list {
+    background: #fff;
+}
+
+.lt-nearby-locations-list label {
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.lt-nearby-locations-list label:hover {
+    background-color: #f0f0f1;
+}
+
+/* Location columns in list table */
+.column-lt_parent {
+    width: 15%;
+}
+
+.column-lt_property_type {
+    width: 12%;
+}
+
+/* Preview box styling */
+.lt-preview-box {
+    border-radius: 4px;
+}
+
+.lt-preview-box h3 {
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.lt-preview-box ol {
+    padding-left: 20px;
+}
+
+.lt-preview-box li {
+    margin-bottom: 5px;
+}
+
+/* Quick edit improvements */
+.inline-edit-lt_location .inline-edit-col-left {
+    width: 50%;
+}
+
+/* Metabox improvements */
+#lt_location_details textarea {
+    width: 100%;
+    min-height: 80px;
+}
+
+#lt_coordinates input {
+    margin-bottom: 5px;
+}
+
+/* Admin notices */
+.lt-admin-notice {
+    padding: 12px;
+    margin: 15px 0;
+    border-left: 4px solid #0073aa;
+    background: #fff;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.lt-admin-notice.success {
+    border-left-color: #00a32a;
+}
+
+.lt-admin-notice.warning {
+    border-left-color: #dba617;
+}
+
+.lt-admin-notice.error {
+    border-left-color: #d63638;
+}
+
+/* Coordinate input styling */
+#lt_coordinates p {
+    margin-bottom: 10px;
+}
+
+#lt_coordinates label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+/* Location hierarchy indicator in title */
+.post-type-lt_location .row-title .dashicons {
+    font-size: 16px;
+    vertical-align: middle;
+    margin-right: 5px;
+    color: #787c82;
+}
