@@ -33,6 +33,7 @@ class LT_Location_CPT {
         add_filter( 'rank_math/sitemap/post_types', array( $this, 'add_to_rankmath_sitemap' ) );
         add_filter( 'rank_math/sitemap/exclude_post_type', array( $this, 'rankmath_include_post_type' ), 10, 2 );
         add_action( 'rank_math/sitemap/post_type_archive_link', array( $this, 'rankmath_archive_link' ), 10, 2 );
+        add_filter( 'rank_math/sitemap/index', array( $this, 'rankmath_add_to_index' ) );
 
         // Rank Math - Enable in settings on activation
         add_action( 'admin_init', array( $this, 'rankmath_enable_sitemap_option' ) );
@@ -86,6 +87,39 @@ class LT_Location_CPT {
             return get_post_type_archive_link( 'lt_location' );
         }
         return $link;
+    }
+
+    /**
+     * Add lt_location sitemap to Rank Math sitemap index
+     */
+    public function rankmath_add_to_index( $index ) {
+        // Check if lt_location sitemap already exists in index
+        $sitemap_url = home_url( '/lt_location-sitemap.xml' );
+
+        foreach ( $index as $entry ) {
+            if ( isset( $entry['loc'] ) && strpos( $entry['loc'], 'lt_location-sitemap' ) !== false ) {
+                return $index; // Already exists
+            }
+        }
+
+        // Get the latest lt_location post for lastmod
+        $latest_post = get_posts( array(
+            'post_type'      => 'lt_location',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'orderby'        => 'modified',
+            'order'          => 'DESC',
+        ) );
+
+        $lastmod = ! empty( $latest_post ) ? $latest_post[0]->post_modified_gmt : current_time( 'mysql', true );
+
+        // Add lt_location sitemap to index
+        $index[] = array(
+            'loc'     => $sitemap_url,
+            'lastmod' => $lastmod,
+        );
+
+        return $index;
     }
 
     /**

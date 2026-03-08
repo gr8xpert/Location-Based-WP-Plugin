@@ -3,7 +3,7 @@
  * Plugin Name: Lion Trust Locations
  * Plugin URI: https://liontrust.com
  * Description: Location-based real estate pages with hierarchical parent-child structure, AJAX search, and SEO interlinking.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Lion Trust
  * Author URI: https://liontrust.com
  * License: GPL-2.0+
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'LT_LOCATIONS_VERSION', '1.0.1' );
+define( 'LT_LOCATIONS_VERSION', '1.0.2' );
 define( 'LT_LOCATIONS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LT_LOCATIONS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'LT_LOCATIONS_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
