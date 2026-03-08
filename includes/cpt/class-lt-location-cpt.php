@@ -29,8 +29,13 @@ class LT_Location_CPT {
         // Yoast SEO
         add_filter( 'wpseo_sitemap_supported_post_types', array( $this, 'add_to_yoast_sitemap' ) );
 
-        // Rank Math
+        // Rank Math - Multiple hooks for full support
         add_filter( 'rank_math/sitemap/post_types', array( $this, 'add_to_rankmath_sitemap' ) );
+        add_filter( 'rank_math/sitemap/exclude_post_type', array( $this, 'rankmath_include_post_type' ), 10, 2 );
+        add_action( 'rank_math/sitemap/post_type_archive_link', array( $this, 'rankmath_archive_link' ), 10, 2 );
+
+        // Rank Math - Enable in settings on activation
+        add_action( 'admin_init', array( $this, 'rankmath_enable_sitemap_option' ) );
 
         // All in One SEO
         add_filter( 'aioseo_sitemap_post_types', array( $this, 'add_to_aioseo_sitemap' ) );
@@ -61,6 +66,54 @@ class LT_Location_CPT {
     public function add_to_rankmath_sitemap( $post_types ) {
         $post_types['lt_location'] = 'lt_location';
         return $post_types;
+    }
+
+    /**
+     * Ensure Rank Math doesn't exclude our post type
+     */
+    public function rankmath_include_post_type( $exclude, $post_type ) {
+        if ( $post_type === 'lt_location' ) {
+            return false;
+        }
+        return $exclude;
+    }
+
+    /**
+     * Rank Math archive link
+     */
+    public function rankmath_archive_link( $link, $post_type ) {
+        if ( $post_type === 'lt_location' ) {
+            return get_post_type_archive_link( 'lt_location' );
+        }
+        return $link;
+    }
+
+    /**
+     * Enable Rank Math sitemap option for lt_location
+     */
+    public function rankmath_enable_sitemap_option() {
+        // Only run once
+        if ( get_option( 'lt_rankmath_sitemap_configured' ) ) {
+            return;
+        }
+
+        // Check if Rank Math is active
+        if ( ! class_exists( 'RankMath' ) ) {
+            return;
+        }
+
+        // Get Rank Math sitemap options
+        $sitemap_options = get_option( 'rank-math-options-sitemap', array() );
+
+        // Enable lt_location in sitemap
+        if ( is_array( $sitemap_options ) ) {
+            $sitemap_options['pt_lt_location_sitemap'] = 'on';
+            $sitemap_options['pt_lt_location_archive_sitemap'] = 'on';
+            update_option( 'rank-math-options-sitemap', $sitemap_options );
+        }
+
+        // Mark as configured
+        update_option( 'lt_rankmath_sitemap_configured', true );
     }
 
     /**
