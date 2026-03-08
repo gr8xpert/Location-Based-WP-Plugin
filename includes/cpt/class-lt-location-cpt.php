@@ -93,11 +93,14 @@ class LT_Location_CPT {
      * Add lt_location sitemap to Rank Math sitemap index
      */
     public function rankmath_add_to_index( $index ) {
-        // Check if lt_location sitemap already exists in index
-        $sitemap_url = home_url( '/lt_location-sitemap.xml' );
+        // Safety check - ensure $index is an array
+        if ( ! is_array( $index ) ) {
+            return $index;
+        }
 
+        // Check if lt_location sitemap already exists in index
         foreach ( $index as $entry ) {
-            if ( isset( $entry['loc'] ) && strpos( $entry['loc'], 'lt_location-sitemap' ) !== false ) {
+            if ( is_array( $entry ) && isset( $entry['loc'] ) && strpos( $entry['loc'], 'lt_location-sitemap' ) !== false ) {
                 return $index; // Already exists
             }
         }
@@ -111,11 +114,11 @@ class LT_Location_CPT {
             'order'          => 'DESC',
         ) );
 
-        $lastmod = ! empty( $latest_post ) ? $latest_post[0]->post_modified_gmt : current_time( 'mysql', true );
+        $lastmod = ! empty( $latest_post ) ? $latest_post[0]->post_modified_gmt : gmdate( 'Y-m-d H:i:s' );
 
         // Add lt_location sitemap to index
         $index[] = array(
-            'loc'     => $sitemap_url,
+            'loc'     => home_url( '/lt_location-sitemap.xml' ),
             'lastmod' => $lastmod,
         );
 
