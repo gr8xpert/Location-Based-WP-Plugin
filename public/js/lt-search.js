@@ -36,6 +36,17 @@
         init: function() {
             this.bindEvents();
             this.cacheElements();
+            this.initState();
+        },
+
+        /**
+         * Initialize state from server-rendered data
+         */
+        initState: function() {
+            var $pagination = $('.lt-search-pagination');
+            if ($pagination.length && $pagination.data('total-pages')) {
+                this.state.totalPages = parseInt($pagination.data('total-pages'), 10);
+            }
         },
 
         /**

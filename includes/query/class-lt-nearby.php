@@ -4,8 +4,7 @@
  *
  * Handles the fallback chain for nearby locations:
  * 1. Manual selection (admin picks)
- * 2. Same region taxonomy
- * 3. Random fallback
+ * 2. Random locations (default)
  *
  * @package LionTrust_Locations
  */
@@ -51,46 +50,15 @@ class LT_Nearby {
             $locations = array_merge( $locations, $manual_posts );
         }
 
-        // If we have enough, return
+        // If we have enough from manual selection, return
         if ( count( $locations ) >= $limit ) {
             return array_slice( $locations, 0, $limit );
         }
 
-        // Step 2: Same region fallback
+        // Step 2: Random locations (default fallback)
         $remaining = $limit - count( $locations );
         $exclude_ids = wp_list_pluck( $locations, 'ID' );
         $exclude_ids[] = $parent_id;
-
-        $regions = get_the_terms( $parent_id, 'lt_region' );
-
-        if ( $regions && ! is_wp_error( $regions ) ) {
-            $region_posts = get_posts( array(
-                'post_type'      => 'lt_location',
-                'post_status'    => 'publish',
-                'post_parent'    => 0,
-                'posts_per_page' => $remaining,
-                'exclude'        => $exclude_ids,
-                'orderby'        => 'rand',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'lt_region',
-                        'field'    => 'term_id',
-                        'terms'    => wp_list_pluck( $regions, 'term_id' ),
-                    ),
-                ),
-            ) );
-
-            $locations = array_merge( $locations, $region_posts );
-            $exclude_ids = array_merge( $exclude_ids, wp_list_pluck( $region_posts, 'ID' ) );
-        }
-
-        // If we have enough, return
-        if ( count( $locations ) >= $limit ) {
-            return array_slice( $locations, 0, $limit );
-        }
-
-        // Step 3: Random fallback
-        $remaining = $limit - count( $locations );
 
         $random_posts = get_posts( array(
             'post_type'      => 'lt_location',
@@ -162,12 +130,12 @@ class LT_Nearby {
             return $this->get_nearby_locations( $post_id, $limit );
         }
 
-        // Get all parent locations with coordinates
+        // Get parent locations with coordinates (capped at 200 for performance)
         $all_locations = get_posts( array(
             'post_type'      => 'lt_location',
             'post_status'    => 'publish',
             'post_parent'    => 0,
-            'posts_per_page' => -1,
+            'posts_per_page' => 200,
             'exclude'        => array( $parent_id ),
             'meta_query'     => array(
                 'relation' => 'AND',

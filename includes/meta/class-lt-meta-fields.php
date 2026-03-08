@@ -106,7 +106,7 @@ class LT_Meta_Fields {
         ) );
         ?>
         <p class="description">
-            <?php esc_html_e( 'Select nearby locations to display. If none selected, the system will use locations from the same region.', 'liontrust-locations' ); ?>
+            <?php esc_html_e( 'Select nearby locations to display. If none selected, the system will show 12 random locations.', 'liontrust-locations' ); ?>
         </p>
 
         <div class="lt-nearby-locations-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-top: 10px;">
@@ -222,15 +222,23 @@ class LT_Meta_Fields {
                 delete_post_meta( $post_id, '_lt_nearby_locations' );
             }
 
-            // Save coordinates
+            // Save coordinates with validation
             if ( isset( $_POST['lt_latitude'] ) && $_POST['lt_latitude'] !== '' ) {
-                update_post_meta( $post_id, '_lt_latitude', floatval( $_POST['lt_latitude'] ) );
+                $latitude = floatval( $_POST['lt_latitude'] );
+                // Validate latitude bounds (-90 to 90)
+                if ( $latitude >= -90 && $latitude <= 90 ) {
+                    update_post_meta( $post_id, '_lt_latitude', $latitude );
+                }
             } else {
                 delete_post_meta( $post_id, '_lt_latitude' );
             }
 
             if ( isset( $_POST['lt_longitude'] ) && $_POST['lt_longitude'] !== '' ) {
-                update_post_meta( $post_id, '_lt_longitude', floatval( $_POST['lt_longitude'] ) );
+                $longitude = floatval( $_POST['lt_longitude'] );
+                // Validate longitude bounds (-180 to 180)
+                if ( $longitude >= -180 && $longitude <= 180 ) {
+                    update_post_meta( $post_id, '_lt_longitude', $longitude );
+                }
             } else {
                 delete_post_meta( $post_id, '_lt_longitude' );
             }

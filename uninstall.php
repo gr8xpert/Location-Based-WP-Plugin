@@ -10,10 +10,11 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
     exit;
 }
 
-// Option to preserve data on uninstall (can be set via filter before uninstall)
-$preserve_data = get_option( 'lt_locations_preserve_data', false );
+// Preserve data by default - only delete if explicitly set to false
+// To delete all data on uninstall, set: update_option( 'lt_locations_delete_data', true );
+$delete_data = get_option( 'lt_locations_delete_data', false );
 
-if ( $preserve_data ) {
+if ( ! $delete_data ) {
     return;
 }
 
@@ -50,11 +51,11 @@ foreach ( $taxonomies as $taxonomy ) {
 
 // Delete plugin options
 delete_option( 'lt_locations_version' );
-delete_option( 'lt_locations_preserve_data' );
+delete_option( 'lt_locations_delete_data' );
 
-// Clear any transients
-$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_lt_%'" );
-$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_lt_%'" );
+// Clear any transients (using prepared statements)
+$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_lt_%' ) );
+$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", '_transient_timeout_lt_%' ) );
 
 // Flush rewrite rules
 flush_rewrite_rules();

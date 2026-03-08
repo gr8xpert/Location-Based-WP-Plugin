@@ -19,6 +19,12 @@ class LT_Rest_API {
     private $namespace = 'lt/v1';
 
     /**
+     * Rate limit settings
+     */
+    private $rate_limit = 60;         // Max requests per window
+    private $rate_window = 60;        // Window in seconds (1 minute)
+
+    /**
      * Register REST routes
      */
     public function register_routes() {
@@ -26,7 +32,7 @@ class LT_Rest_API {
         register_rest_route( $this->namespace, '/locations/search', array(
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => array( $this, 'search_locations' ),
-            'permission_callback' => '__return_true',
+            'permission_callback' => array( $this, 'check_rate_limit' ),
             'args'                => array(
                 's' => array(
                     'description'       => 'Search term',
@@ -62,7 +68,7 @@ class LT_Rest_API {
         register_rest_route( $this->namespace, '/locations/(?P<id>\d+)/nearby', array(
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => array( $this, 'get_nearby' ),
-            'permission_callback' => '__return_true',
+            'permission_callback' => array( $this, 'check_rate_limit' ),
             'args'                => array(
                 'id' => array(
                     'description'       => 'Location ID',
@@ -83,7 +89,7 @@ class LT_Rest_API {
         register_rest_route( $this->namespace, '/locations/(?P<id>\d+)/children', array(
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => array( $this, 'get_children' ),
-            'permission_callback' => '__return_true',
+            'permission_callback' => array( $this, 'check_rate_limit' ),
             'args'                => array(
                 'id' => array(
                     'description'       => 'Parent Location ID',
@@ -93,6 +99,64 @@ class LT_Rest_API {
                 ),
             ),
         ) );
+    }
+
+    /**
+     * Check rate limit for API requests
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return bool|WP_Error True if allowed, WP_Error if rate limited.
+     */
+    public function check_rate_limit( $request ) {
+        // Skip rate limiting for logged-in users with edit capability
+        if ( current_user_can( 'edit_posts' ) ) {
+            return true;
+        }
+
+        $ip = $this->get_client_ip();
+        $transient_key = 'lt_rate_' . md5( $ip );
+
+        $requests = get_transient( $transient_key );
+
+        if ( false === $requests ) {
+            // First request in window
+            set_transient( $transient_key, 1, $this->rate_window );
+            return true;
+        }
+
+        if ( $requests >= $this->rate_limit ) {
+            return new WP_Error(
+                'rate_limit_exceeded',
+                __( 'Rate limit exceeded. Please try again later.', 'liontrust-locations' ),
+                array( 'status' => 429 )
+            );
+        }
+
+        // Increment request count
+        set_transient( $transient_key, $requests + 1, $this->rate_window );
+
+        return true;
+    }
+
+    /**
+     * Get client IP address
+     *
+     * @return string
+     */
+    private function get_client_ip() {
+        $ip = '';
+
+        if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+            $ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CLIENT_IP'] ) );
+        } elseif ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+            // Get first IP if multiple
+            $ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+            $ip = trim( $ips[0] );
+        } elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+            $ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+        }
+
+        return $ip;
     }
 
     /**

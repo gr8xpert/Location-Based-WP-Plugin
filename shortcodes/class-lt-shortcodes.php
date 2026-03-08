@@ -88,12 +88,26 @@ class LT_Shortcodes {
 
             <div class="lt-search-results lt-locations-grid lt-cols-<?php echo esc_attr( $atts['columns'] ); ?>">
                 <?php
+                $per_page = intval( $atts['per_page'] );
+
+                // Count total parent locations
+                $total_count = wp_count_posts( 'lt_location' );
+                $total_parents = get_posts( array(
+                    'post_type'      => 'lt_location',
+                    'post_status'    => 'publish',
+                    'post_parent'    => 0,
+                    'posts_per_page' => -1,
+                    'fields'         => 'ids',
+                ) );
+                $total_items = count( $total_parents );
+                $total_pages = ceil( $total_items / $per_page );
+
                 // Initial load of locations
                 $initial_locations = get_posts( array(
                     'post_type'      => 'lt_location',
                     'post_status'    => 'publish',
                     'post_parent'    => 0,
-                    'posts_per_page' => intval( $atts['per_page'] ),
+                    'posts_per_page' => $per_page,
                     'orderby'        => 'title',
                     'order'          => 'ASC',
                 ) );
@@ -104,7 +118,24 @@ class LT_Shortcodes {
                 ?>
             </div>
 
-            <div class="lt-search-pagination lt-pagination"></div>
+            <div class="lt-search-pagination lt-pagination" data-total-pages="<?php echo esc_attr( $total_pages ); ?>">
+                <?php if ( $total_pages > 1 ) : ?>
+                    <span class="current">1</span>
+                    <?php
+                    $end = min( 3, $total_pages );
+                    for ( $i = 2; $i <= $end; $i++ ) :
+                    ?>
+                        <a href="#" data-page="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ); ?></a>
+                    <?php endfor; ?>
+                    <?php if ( $total_pages > 4 ) : ?>
+                        <span class="dots">...</span>
+                    <?php endif; ?>
+                    <?php if ( $total_pages > 3 ) : ?>
+                        <a href="#" data-page="<?php echo esc_attr( $total_pages ); ?>"><?php echo esc_html( $total_pages ); ?></a>
+                    <?php endif; ?>
+                    <a href="#" data-page="2">&raquo;</a>
+                <?php endif; ?>
+            </div>
         </div>
         <?php
         return ob_get_clean();
@@ -246,17 +277,18 @@ class LT_Shortcodes {
     /**
      * Nearby locations shortcode
      *
-     * [lt_nearby_locations count="12" columns="4"]
+     * [lt_nearby_locations count="12" columns="4" show_image="true"]
      *
      * @param array $atts Shortcode attributes.
      * @return string HTML output.
      */
     public function nearby_shortcode( $atts ) {
         $atts = shortcode_atts( array(
-            'post_id' => 0,
-            'count'   => 12,
-            'columns' => 4,
-            'title'   => __( 'Nearby Locations', 'liontrust-locations' ),
+            'post_id'    => 0,
+            'count'      => 12,
+            'columns'    => 4,
+            'title'      => __( 'Nearby Locations', 'liontrust-locations' ),
+            'show_image' => 'true',
         ), $atts, 'lt_nearby_locations' );
 
         wp_enqueue_style( 'lt-public' );
@@ -275,6 +307,8 @@ class LT_Shortcodes {
             return '';
         }
 
+        $show_image = filter_var( $atts['show_image'], FILTER_VALIDATE_BOOLEAN );
+
         ob_start();
         ?>
         <section class="lt-nearby">
@@ -282,12 +316,16 @@ class LT_Shortcodes {
                 <h3 class="lt-nearby-title"><?php echo esc_html( $atts['title'] ); ?></h3>
             <?php endif; ?>
 
-            <div class="lt-nearby-grid" style="grid-template-columns: repeat(<?php echo esc_attr( $atts['columns'] ); ?>, 1fr);">
-                <?php foreach ( $locations as $location ) : ?>
-                    <a href="<?php echo esc_url( get_permalink( $location->ID ) ); ?>">
-                        <?php echo esc_html( $location->post_title ); ?>
-                    </a>
-                <?php endforeach; ?>
+            <div class="lt-locations-grid lt-cols-<?php echo esc_attr( $atts['columns'] ); ?>">
+                <?php
+                foreach ( $locations as $location ) {
+                    echo lt_render_location_card( $location, array(
+                        'show_image'    => $show_image,
+                        'show_children' => false,
+                        'show_excerpt'  => false,
+                    ) );
+                }
+                ?>
             </div>
         </section>
         <?php

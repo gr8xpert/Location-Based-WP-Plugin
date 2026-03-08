@@ -62,7 +62,7 @@ class LT_Bulk_Creator {
                             /* translators: %1$d: number of pages, %2$s: location name */
                             esc_html__( 'Successfully created %1$d pages for "%2$s".', 'liontrust-locations' ),
                             $created,
-                            $location_name
+                            esc_html( $location_name )
                         );
                         ?>
                     </p>
@@ -208,6 +208,12 @@ class LT_Bulk_Creator {
             var $preview = $('#lt-preview-list');
             var $checkboxes = $('input[name="property_types[]"]');
 
+            function escapeHtml(text) {
+                var div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
             function updatePreview() {
                 var name = $nameInput.val().trim();
 
@@ -216,12 +222,13 @@ class LT_Bulk_Creator {
                     return;
                 }
 
+                var safeName = escapeHtml(name);
                 var html = '<ol style="margin: 0;">';
-                html += '<li><strong>' + name + '</strong> (Parent)</li>';
+                html += '<li><strong>' + safeName + '</strong> (Parent)</li>';
 
                 $checkboxes.filter(':checked').each(function() {
-                    var typeName = $(this).parent().text().trim();
-                    html += '<li>' + name + ' ' + typeName + '</li>';
+                    var typeName = escapeHtml($(this).parent().text().trim());
+                    html += '<li>' + safeName + ' ' + typeName + '</li>';
                 });
 
                 html += '</ol>';
@@ -255,9 +262,24 @@ class LT_Bulk_Creator {
         $location_name  = isset( $_POST['location_name'] ) ? sanitize_text_field( $_POST['location_name'] ) : '';
         $region         = isset( $_POST['region'] ) ? absint( $_POST['region'] ) : 0;
         $property_types = isset( $_POST['property_types'] ) ? array_map( 'absint', $_POST['property_types'] ) : array();
-        $latitude       = isset( $_POST['latitude'] ) && $_POST['latitude'] !== '' ? floatval( $_POST['latitude'] ) : '';
-        $longitude      = isset( $_POST['longitude'] ) && $_POST['longitude'] !== '' ? floatval( $_POST['longitude'] ) : '';
         $post_status    = isset( $_POST['post_status'] ) ? sanitize_text_field( $_POST['post_status'] ) : 'draft';
+
+        // Validate and sanitize coordinates
+        $latitude = '';
+        if ( isset( $_POST['latitude'] ) && $_POST['latitude'] !== '' ) {
+            $lat_val = floatval( $_POST['latitude'] );
+            if ( $lat_val >= -90 && $lat_val <= 90 ) {
+                $latitude = $lat_val;
+            }
+        }
+
+        $longitude = '';
+        if ( isset( $_POST['longitude'] ) && $_POST['longitude'] !== '' ) {
+            $lon_val = floatval( $_POST['longitude'] );
+            if ( $lon_val >= -180 && $lon_val <= 180 ) {
+                $longitude = $lon_val;
+            }
+        }
 
         // Validate
         if ( empty( $location_name ) ) {

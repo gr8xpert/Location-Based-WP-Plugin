@@ -73,10 +73,9 @@ class LT_Admin {
         foreach ( $columns as $key => $label ) {
             $new_columns[ $key ] = $label;
 
-            // Add after title
+            // Add Parent column after title
             if ( $key === 'title' ) {
-                $new_columns['lt_parent']        = __( 'Parent', 'liontrust-locations' );
-                $new_columns['lt_property_type'] = __( 'Property Type', 'liontrust-locations' );
+                $new_columns['lt_parent'] = __( 'Parent', 'liontrust-locations' );
             }
         }
 
@@ -102,19 +101,6 @@ class LT_Admin {
                     }
                 } else {
                     echo '<span class="lt-badge lt-badge-parent">' . esc_html__( 'Parent', 'liontrust-locations' ) . '</span>';
-                }
-                break;
-
-            case 'lt_property_type':
-                $terms = get_the_terms( $post_id, 'lt_property_type' );
-                if ( $terms && ! is_wp_error( $terms ) ) {
-                    $term_links = array();
-                    foreach ( $terms as $term ) {
-                        $term_links[] = '<a href="' . esc_url( admin_url( 'edit.php?post_type=lt_location&lt_property_type=' . $term->slug ) ) . '">' . esc_html( $term->name ) . '</a>';
-                    }
-                    echo implode( ', ', $term_links );
-                } else {
-                    echo '&mdash;';
                 }
                 break;
         }
