@@ -79,9 +79,9 @@ function lt_locations_init() {
     // Initialize loader
     $loader = new LT_Loader();
 
-    // Register CPT and Taxonomies
+    // Register CPT and Taxonomies (with sitemap support)
     $cpt = new LT_Location_CPT();
-    $loader->add_action( 'init', $cpt, 'register' );
+    $loader->add_action( 'init', $cpt, 'init' );
 
     $taxonomies = new LT_Taxonomies();
     $loader->add_action( 'init', $taxonomies, 'register' );

@@ -12,6 +12,76 @@ if ( ! defined( 'ABSPATH' ) ) {
 class LT_Location_CPT {
 
     /**
+     * Initialize CPT and sitemap support
+     */
+    public function init() {
+        $this->register();
+        $this->register_sitemap_support();
+    }
+
+    /**
+     * Register sitemap support for popular plugins
+     */
+    private function register_sitemap_support() {
+        // WordPress Core Sitemaps (5.5+)
+        add_filter( 'wp_sitemaps_post_types', array( $this, 'add_to_core_sitemap' ) );
+
+        // Yoast SEO
+        add_filter( 'wpseo_sitemap_supported_post_types', array( $this, 'add_to_yoast_sitemap' ) );
+
+        // Rank Math
+        add_filter( 'rank_math/sitemap/post_types', array( $this, 'add_to_rankmath_sitemap' ) );
+
+        // All in One SEO
+        add_filter( 'aioseo_sitemap_post_types', array( $this, 'add_to_aioseo_sitemap' ) );
+
+        // XML Sitemap Generator (by Auctollo)
+        add_filter( 'sm_add_post_type', array( $this, 'add_to_xml_sitemap_generator' ), 10, 2 );
+    }
+
+    /**
+     * Add to WordPress Core Sitemap (5.5+)
+     */
+    public function add_to_core_sitemap( $post_types ) {
+        $post_types['lt_location'] = get_post_type_object( 'lt_location' );
+        return $post_types;
+    }
+
+    /**
+     * Add to Yoast SEO Sitemap
+     */
+    public function add_to_yoast_sitemap( $post_types ) {
+        $post_types[] = 'lt_location';
+        return array_unique( $post_types );
+    }
+
+    /**
+     * Add to Rank Math Sitemap
+     */
+    public function add_to_rankmath_sitemap( $post_types ) {
+        $post_types['lt_location'] = 'lt_location';
+        return $post_types;
+    }
+
+    /**
+     * Add to All in One SEO Sitemap
+     */
+    public function add_to_aioseo_sitemap( $post_types ) {
+        $post_types[] = 'lt_location';
+        return array_unique( $post_types );
+    }
+
+    /**
+     * Add to XML Sitemap Generator
+     */
+    public function add_to_xml_sitemap_generator( $include, $post_type ) {
+        if ( $post_type === 'lt_location' ) {
+            return true;
+        }
+        return $include;
+    }
+
+    /**
      * Register the custom post type
      */
     public function register() {
@@ -43,23 +113,25 @@ class LT_Location_CPT {
         );
 
         $args = array(
-            'labels'             => $labels,
-            'public'             => true,
-            'publicly_queryable' => true,
-            'show_ui'            => true,
-            'show_in_menu'       => true,
-            'query_var'          => true,
-            'rewrite'            => array(
-                'slug'       => 'popular-locations',
-                'with_front' => false,
+            'labels'              => $labels,
+            'public'              => true,
+            'publicly_queryable'  => true,
+            'exclude_from_search' => false,
+            'show_ui'             => true,
+            'show_in_menu'        => true,
+            'show_in_nav_menus'   => true,
+            'query_var'           => true,
+            'rewrite'             => array(
+                'slug'         => 'popular-locations',
+                'with_front'   => false,
                 'hierarchical' => true,
             ),
-            'capability_type'    => 'page',
-            'has_archive'        => true,
-            'hierarchical'       => true,
-            'menu_position'      => 20,
-            'menu_icon'          => 'dashicons-location-alt',
-            'supports'           => array(
+            'capability_type'     => 'page',
+            'has_archive'         => true,
+            'hierarchical'        => true,
+            'menu_position'       => 20,
+            'menu_icon'           => 'dashicons-location-alt',
+            'supports'            => array(
                 'title',
                 'editor',
                 'thumbnail',
@@ -67,9 +139,9 @@ class LT_Location_CPT {
                 'page-attributes',
                 'revisions',
             ),
-            'show_in_rest'       => true,
-            'rest_base'          => 'lt-locations',
-            'taxonomies'         => array( 'lt_property_type', 'lt_region' ),
+            'show_in_rest'        => true,
+            'rest_base'           => 'lt-locations',
+            'taxonomies'          => array( 'lt_property_type', 'lt_region' ),
         );
 
         register_post_type( 'lt_location', $args );
