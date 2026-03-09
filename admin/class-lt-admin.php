@@ -71,6 +71,11 @@ class LT_Admin {
         $new_columns = array();
 
         foreach ( $columns as $key => $label ) {
+            // Add Featured Image column before title
+            if ( $key === 'title' ) {
+                $new_columns['lt_featured_image'] = __( 'Image', 'liontrust-locations' );
+            }
+
             $new_columns[ $key ] = $label;
 
             // Add Parent column after title
@@ -90,6 +95,17 @@ class LT_Admin {
      */
     public function custom_column_content( $column, $post_id ) {
         switch ( $column ) {
+            case 'lt_featured_image':
+                if ( has_post_thumbnail( $post_id ) ) {
+                    $thumb = get_the_post_thumbnail( $post_id, array( 50, 50 ), array(
+                        'style' => 'width:50px;height:50px;object-fit:cover;border-radius:4px;',
+                    ) );
+                    echo '<a href="' . esc_url( get_edit_post_link( $post_id ) ) . '">' . $thumb . '</a>';
+                } else {
+                    echo '<span class="dashicons dashicons-format-image" style="color:#ccc;font-size:30px;width:50px;height:50px;line-height:50px;text-align:center;"></span>';
+                }
+                break;
+
             case 'lt_parent':
                 $post = get_post( $post_id );
                 if ( $post->post_parent !== 0 ) {

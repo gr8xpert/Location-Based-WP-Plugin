@@ -53,6 +53,10 @@
 }
 
 /* Location columns in list table */
+.column-lt_featured_image {
+    width: 60px;
+}
+
 .column-lt_parent {
     width: 15%;
 }
